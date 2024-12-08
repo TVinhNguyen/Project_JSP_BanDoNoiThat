@@ -2,7 +2,7 @@ package model.bo;
 
 import model.dao.*;
 import model.bean.*;
-
+import model.dto.*;
 import java.util.List;
 public class UserBO {
         private UserDAO userDAO = new UserDAO();

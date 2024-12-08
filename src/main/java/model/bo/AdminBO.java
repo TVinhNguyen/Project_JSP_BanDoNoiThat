@@ -2,6 +2,7 @@ package model.bo;
 
 import model.dao.*;
 import model.bean.*;
+import model.dto.OrderDetailsView;
 
 import java.util.List;
 
@@ -62,6 +63,9 @@ public class AdminBO {
     public boolean deleteProduct(int productId) {
         return productDAO.deleteProduct(productId);
     }
+    public Product getProductById(int productId) {
+        return productDAO.getProductById(productId);
+    }
     public Categories getCategories(int idCategory) {
         return categoryDAO.getCategoryById(idCategory);
     }
@@ -75,7 +79,7 @@ public class AdminBO {
 
     public Order getOrder(int orderId) {return orderDAO.getOrderById(orderId);}
 
-    public List<OrderDetail> getOrderDetailsByOrderId(String orderId) {
+    public List<OrderDetailsView> getOrderDetailsByOrderId(String orderId) {
         return orderDetailDAO.getOrderDetailsByOrderId(orderId);
     }
 

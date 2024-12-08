@@ -1,5 +1,5 @@
 <%@ page import="java.util.List" %>
-<%@ page import="model.bean.ProductView" %>
+<%@ page import="model.dto.ProductView" %>
 <%@ page import="model.bean.Categories" %>
 <%@ page language="java" contentType="text/html; charset=UTF-8" %>
 <!DOCTYPE html>
@@ -69,7 +69,7 @@
 <div id="overlayAddProduct" class="overlay">
   <div class="overlay-content">
     <button type="button" id="btnCloseOverlay" class="btn-close">
-      <i class="fas fa-times"></i> <!-- Font Awesome Icon -->
+      <i class="fas fa-times"></i>
     </button>
     <h2>Add Product</h2>
     <form action="/admin/ProductManage" method="post" enctype="multipart/form-data">

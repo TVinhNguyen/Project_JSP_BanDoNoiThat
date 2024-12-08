@@ -2,7 +2,7 @@ package model.bo;
 
 import model.bean.Categories;
 import model.bean.Product;
-import model.bean.ProductView;
+import model.dto.ProductView;
 import model.bean.User;
 import model.dao.*;
 

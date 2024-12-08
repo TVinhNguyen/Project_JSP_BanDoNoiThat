@@ -2,7 +2,7 @@ package model.dao;
 
 import DB.Database;
 import model.bean.Product;
-import model.bean.ProductView;
+import model.dto.ProductView;
 
 import java.sql.*;
 import java.util.ArrayList;

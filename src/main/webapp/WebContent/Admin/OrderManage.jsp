@@ -1,12 +1,6 @@
-<%--
-  Created by IntelliJ IDEA.
-  User: ADMIN
-  Date: 12/8/2024
-  Time: 12:23 AM
-  To change this template use File | Settings | File Templates.
---%>
 <%@ page import="java.util.List" %>
 <%@ page import="model.bean.Order" %>
+<%@ page import="model.bean.OrderDetail" %>
 <%@ page language="java" contentType="text/html; charset=UTF-8" %>
 <!DOCTYPE html>
 <html lang="en">
@@ -45,8 +39,9 @@
                 <td><%= order.getOrderDate() %></td>
                 <td><%= order.getTotalAmount() %></td>
                 <td>
-                    <button class="btn-edit">Edit</button>
-                    <button class="btn-delete">Delete</button>
+                    <a href="/admin/OrderManage/orderDetails?orderId=<%= order.getOrderId() %>">
+                        <button class="btn-view-details">View Details</button>
+                    </a>
                 </td>
             </tr>
             <%

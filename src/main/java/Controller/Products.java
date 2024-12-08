@@ -1,7 +1,7 @@
 //package Controller;
 //
 //import model.bean.Product;
-//import model.bean.ProductView;
+//import model.dto.ProductView;
 //import model.bean.User;
 //import model.bo.AdminBO;
 //import model.bo.GuestBO;

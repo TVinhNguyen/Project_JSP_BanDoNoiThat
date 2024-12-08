@@ -1,4 +1,4 @@
-package model.bean;
+package model.dto;
 
 public class ProductView {
     private int id;

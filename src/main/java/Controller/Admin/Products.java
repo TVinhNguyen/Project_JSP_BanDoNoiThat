@@ -2,7 +2,7 @@ package Controller.Admin;
 
 import model.bean.Categories;
 import model.bean.Product;
-import model.bean.ProductView;
+import model.dto.ProductView;
 import model.bean.User;
 import model.bo.AdminBO;
 import model.bo.GuestBO;
@@ -195,7 +195,6 @@ public class Products extends HttpServlet {
             }
             try {
                 int id = Integer.parseInt(pathInfo.substring(1));
-                System.out.println(id);
                 boolean success = adminBO.deleteProduct(id);
 
                 if (success) {

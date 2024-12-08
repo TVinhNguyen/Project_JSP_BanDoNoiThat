@@ -1,6 +1,6 @@
 <%@ page import="model.bean.Product" %>
 <%@ page import="java.util.List" %>
-<%@ page import="model.bean.ProductView" %>
+<%@ page import="model.dto.ProductView" %>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html lang="vi">

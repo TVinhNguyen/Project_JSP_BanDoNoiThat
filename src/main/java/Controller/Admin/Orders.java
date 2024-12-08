@@ -5,6 +5,7 @@ import model.bean.OrderDetail;
 import model.bean.User;
 import model.bo.AdminBO;
 import model.bo.UserBO;
+import model.dto.OrderDetailsView;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -35,27 +36,30 @@ public class Orders extends HttpServlet {
                 List<Order> orders = adminBO.getAllOrders();
                 req.setAttribute("orders", orders);
                 req.getRequestDispatcher("/WebContent/Admin/OrderManage.jsp").forward(req, resp);
-            } else {
-                try {
-                    String orderId = pathInfo.substring(1);
-                    int id=0;
-                    if (orderId == null || orderId.equals("")) {
-                        id = Integer.parseInt(orderId);
-                    }
-                    Order order = adminBO.getOrder(id);
+            } else if (pathInfo.equals("/orderDetails")) {
+                String orderId = req.getParameter("orderId");
 
-                    if (order != null) {
-                        List<OrderDetail> orderDetails = adminBO.getOrderDetailsByOrderId(orderId);
-                        req.setAttribute("order", order);
-                        req.setAttribute("orderDetails", orderDetails);
-                        req.getRequestDispatcher("/WebContent/order-details.jsp").forward(req, resp);
-                    } else {
-                        resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Order not found");
+                if (orderId != null && !orderId.isEmpty()) {
+                    try {
+                        List<OrderDetailsView> orderDetails = adminBO.getOrderDetailsByOrderId(orderId);
+                        Order order = adminBO.getOrder(Integer.parseInt(orderId));
+
+                        if (order != null) {
+                            req.setAttribute("order", order);
+                            req.setAttribute("orderDetails", orderDetails);
+                            req.getRequestDispatcher("/WebContent/Admin/orderDetails.jsp").forward(req, resp);
+                        } else {
+                            resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Order not found");
+                        }
+                    } catch (Exception e) {
+                        resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                        resp.getWriter().write("Invalid order ID");
                     }
-                } catch (Exception e) {
-                    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    resp.getWriter().write("Invalid order ID");
+                } else {
+                    resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Order ID is required");
                 }
+            } else {
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Invalid path");
             }
         } else {
             // Người dùng chỉ có thể xem hóa đơn của mình
@@ -71,6 +75,8 @@ public class Orders extends HttpServlet {
             }
         }
     }
+
+
 
 //    @Override
 //    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
