@@ -3,23 +3,23 @@ package model.bean;
 import java.util.Date;
 
 public class Order {
-    private String orderId;
+    private int orderId;
     private int userId;
     private Date orderDate;
     private double totalAmount;
 
-    public Order(String orderId, int userId, Date orderDate, double totalAmount) {
+    public Order(int orderId, int userId, Date orderDate, double totalAmount) {
         this.orderId = orderId;
         this.userId = userId;
         this.orderDate = orderDate;
         this.totalAmount = totalAmount;
     }
 
-    public String getOrderId() {
+    public int getOrderId() {
         return orderId;
     }
 
-    public void setOrderId(String orderId) {
+    public void setOrderId(int orderId) {
         this.orderId = orderId;
     }
 

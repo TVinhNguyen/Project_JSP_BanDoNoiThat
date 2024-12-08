@@ -71,7 +71,12 @@ public class AdminBO {
         return orderDAO.getAllOrders();
     }
 
+    public List<Order> getOrderByIdUserId(int idUser) {return  orderDAO.getOrdersByUserId(idUser);}
+
+    public Order getOrder(int orderId) {return orderDAO.getOrderById(orderId);}
+
     public List<OrderDetail> getOrderDetailsByOrderId(String orderId) {
         return orderDetailDAO.getOrderDetailsByOrderId(orderId);
     }
+
 }
