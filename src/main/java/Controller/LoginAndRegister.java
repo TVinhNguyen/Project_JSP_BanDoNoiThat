@@ -28,7 +28,7 @@ public class LoginAndRegister extends HttpServlet {
                 HttpSession session = req.getSession();
                 session.setAttribute("user", user);
                 if(user.getRole().equals("admin")) {
-                    resp.sendRedirect(req.getContextPath() + "/admin");
+                    resp.sendRedirect(req.getContextPath() + "/admin/default");
                 }
             }
             else {

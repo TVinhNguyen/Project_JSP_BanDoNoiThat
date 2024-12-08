@@ -14,7 +14,7 @@ public class ProductDAO {
         List<Product> products = new ArrayList<Product>();
 
         Connection conn = Database.getConnection();
-        String sql = "SELECT * FROM product";
+        String sql = "SELECT * FROM products";
         try {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(sql);
@@ -37,7 +37,7 @@ public class ProductDAO {
     // Thêm sản phẩm mới
     public boolean insertProduct(Product product) {
         Connection conn = Database.getConnection();
-        String sql = "INSERT INTO product (id, name, description, price, stock, categoryID, image_url) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO products (id, name, description, price, stock, categoryID, image_url) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try {
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setInt(1, product.getId());
@@ -56,7 +56,7 @@ public class ProductDAO {
     // Cập nhật sản phẩm
     public boolean updateProduct(Product product) {
         Connection conn = Database.getConnection();
-        String sql = "UPDATE product SET name = ?, description = ?, price = ?, stock = ?, categoryID = ?, image_url = ? WHERE id = ?";
+        String sql = "UPDATE products SET name = ?, description = ?, price = ?, stock = ?, categoryID = ?, image_url = ? WHERE id = ?";
         try {
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setString(1, product.getName());
@@ -74,22 +74,27 @@ public class ProductDAO {
 
     // Xóa sản phẩm
     public boolean deleteProduct(int id) {
-        Connection conn = Database.getConnection();
-        String sql = "DELETE FROM product WHERE id = ?";
-        try {
-            PreparedStatement stmt = conn.prepareStatement(sql);
+        String sql = "DELETE FROM products WHERE id = ?";
+        try (Connection conn = Database.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
             stmt.setInt(1, id);
-            return stmt.executeUpdate() > 0;
+
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            // In lỗi nếu cần thiết hoặc log vào hệ thống
+            e.printStackTrace();
+            throw new RuntimeException("Error deleting product with id: " + id, e);
         }
     }
+
 
     // Tìm kiếm sản phẩm theo tên
     public List<Product> searchByName(String name) {
         List<Product> products = new ArrayList<>();
         Connection conn = Database.getConnection();
-        String sql = "SELECT * FROM product WHERE name LIKE ?";
+        String sql = "SELECT * FROM products WHERE name LIKE ?";
         try {
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setString(1, "%" + name + "%");
@@ -113,7 +118,7 @@ public class ProductDAO {
     // Lấy sản phẩm theo ID
     public Product getProductById(int id) {
         Connection conn = Database.getConnection();
-        String sql = "SELECT * FROM product WHERE id = ?";
+        String sql = "SELECT * FROM products WHERE id = ?";
         try {
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setInt(1, id);
@@ -199,7 +204,7 @@ public class ProductDAO {
     public List<Product> searchByCategoryId(int categoryId) {
         List<Product> products = new ArrayList<>();
         Connection conn = Database.getConnection();
-        String sql = "SELECT * FROM product WHERE categoryID = ?";
+        String sql = "SELECT * FROM products WHERE categoryID = ?";
         try {
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setInt(1, categoryId);

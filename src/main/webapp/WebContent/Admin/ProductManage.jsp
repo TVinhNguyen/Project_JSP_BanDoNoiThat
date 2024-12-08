@@ -1,5 +1,6 @@
 <%@ page import="java.util.List" %>
 <%@ page import="model.bean.ProductView" %>
+<%@ page import="model.bean.Categories" %>
 <%@ page language="java" contentType="text/html; charset=UTF-8" %>
 <!DOCTYPE html>
 <html lang="en">
@@ -8,6 +9,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard</title>
   <link rel="stylesheet" href="/WebContent/Admin/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <script src="/WebContent/Admin/js/script.js" defer></script>
 </head>
 <body>
@@ -46,7 +48,7 @@
         <td><img src="<%= product.getImageUrl() %>" alt="<%= product.getName() %>" width="100"></td>
         <td>
           <button class="btn-edit">Edit</button>
-          <button class="btn-delete">Delete</button>
+          <button class="btn-delete"  data-id="<%= product.getId() %>">Delete</button>
         </td>
       </tr>
       <%
@@ -64,11 +66,13 @@
   </div>
 </div>
 
-<!-- Overlay Add Product -->
 <div id="overlayAddProduct" class="overlay">
   <div class="overlay-content">
+    <button type="button" id="btnCloseOverlay" class="btn-close">
+      <i class="fas fa-times"></i> <!-- Font Awesome Icon -->
+    </button>
     <h2>Add Product</h2>
-    <form action="/addProduct" method="post" enctype="multipart/form-data">
+    <form action="/admin/ProductManage" method="post" enctype="multipart/form-data">
       <div class="form-group">
         <label for="name">Name:</label>
         <input type="text" id="name" name="name" required>
@@ -79,18 +83,26 @@
       </div>
       <div class="form-group">
         <label for="price">Price:</label>
-        <input type="number" id="price" name="price" step="0.01" required>
+        <input type="number" id="price" name="price" step="0.1" required>
       </div>
       <div class="form-group">
         <label for="stock">Stock:</label>
         <input type="number" id="stock" name="stock" required>
       </div>
       <div class="form-group">
-        <label for="category">Category:</label>
-        <select id="category" name="category" required>
-          <option value="1">Electronics</option>
-          <option value="2">Clothing</option>
-          <option value="3">Home & Garden</option>
+        <label for="idcategory">Category:</label>
+        <select id="idcategory" name="idcategory" required>
+          <option value="" disabled selected>-- Select Category --</option>
+          <%
+            List<Categories> categoriesList = (List<Categories>) request.getAttribute("categories");
+            if (categoriesList != null && !categoriesList.isEmpty()) {
+              for (Categories category : categoriesList) {
+          %>
+          <option value="<%= category.getId() %>"><%= category.getName() %></option>
+          <%
+              }
+            }
+          %>
         </select>
       </div>
       <div class="form-group">
@@ -99,10 +111,10 @@
       </div>
       <div class="form-group">
         <button type="submit" class="btn-submit">Add Product</button>
-        <button type="button" id="btnCloseOverlay" class="btn-cancel">Cancel</button>
       </div>
     </form>
   </div>
 </div>
+
 </body>
 </html>
