@@ -62,13 +62,11 @@ public class Orders extends HttpServlet {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Invalid path");
             }
         } else {
-            // Người dùng chỉ có thể xem hóa đơn của mình
             if (pathInfo == null || pathInfo.equals("/") ||
                     !pathInfo.substring(1).equals(String.valueOf(loggedInUser.getId()))) {
                 resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 resp.getWriter().write("You are only allowed to view your own orders");
             } else {
-                // Xem hóa đơn của người dùng
                 List<Order> orders = userBO.getOrdersByUserId(loggedInUser.getId());
                 req.setAttribute("orders", orders);
                 req.getRequestDispatcher("/WebContent/order-list.jsp").forward(req, resp);

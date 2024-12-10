@@ -9,140 +9,95 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ProductDAO {
-    // Lấy tất cả các sản phẩm
-    public List<Product> getAllProducts() {
-        List<Product> products = new ArrayList<Product>();
 
-        Connection conn = Database.getConnection();
-        String sql = "SELECT * FROM products";
-        try {
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(sql);
+    public List<Product> getAllProducts() {
+        List<Product> products = new ArrayList<>();
+        String sql = "SELECT * FROM products WHERE is_deleted = 0";
+        try (Connection conn = Database.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
             while (rs.next()) {
-                int id = rs.getInt("id");
-                String name = rs.getString("name");
-                String description = rs.getString("description");
-                double price = rs.getDouble("price");
-                int stock = rs.getInt("stock");
-                int categoryID = rs.getInt("categoryID");
-                String imageUrl = rs.getString("image_url");
-                products.add(new Product(id, name, description, price, stock, categoryID, imageUrl));
+                products.add(mapResultSetToProduct(rs));
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error fetching all products: " + e.getMessage(), e);
         }
         return products;
     }
 
-    // Thêm sản phẩm mới
-    public boolean insertProduct(Product product) {
-        Connection conn = Database.getConnection();
-        String sql = "INSERT INTO products (id, name, description, price, stock, categoryID, image_url) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        try {
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, product.getId());
-            stmt.setString(2, product.getName());
-            stmt.setString(3, product.getDescription());
-            stmt.setDouble(4, product.getPrice());
-            stmt.setInt(5, product.getStock());
-            stmt.setInt(6, product.getCategoryID());
-            stmt.setString(7, product.getImageUrl());
-            return stmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    // Cập nhật sản phẩm
-    public boolean updateProduct(Product product) {
-        Connection conn = Database.getConnection();
-        String sql = "UPDATE products SET name = ?, description = ?, price = ?, stock = ?, categoryID = ?, image_url = ? WHERE id = ?";
-        try {
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, product.getName());
-            stmt.setString(2, product.getDescription());
-            stmt.setDouble(3, product.getPrice());
-            stmt.setInt(4, product.getStock());
-            stmt.setInt(5, product.getCategoryID());
-            stmt.setString(6, product.getImageUrl());
-            stmt.setInt(7, product.getId());
-            return stmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    // Xóa sản phẩm
-    public boolean deleteProduct(int id) {
-        String sql = "DELETE FROM products WHERE id = ?";
+    public Product getProductById(int id) {
+        String sql = "SELECT * FROM products WHERE id = ? AND is_deleted = 0";
         try (Connection conn = Database.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, id);
-
-            int rowsAffected = stmt.executeUpdate();
-            return rowsAffected > 0;
-        } catch (SQLException e) {
-            // In lỗi nếu cần thiết hoặc log vào hệ thống
-            e.printStackTrace();
-            throw new RuntimeException("Error deleting product with id: " + id, e);
-        }
-    }
-
-
-    // Tìm kiếm sản phẩm theo tên
-    public List<Product> searchByName(String name) {
-        List<Product> products = new ArrayList<>();
-        Connection conn = Database.getConnection();
-        String sql = "SELECT * FROM products WHERE name LIKE ?";
-        try {
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, "%" + name + "%");
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                int id = rs.getInt("id");
-                String productName = rs.getString("name");
-                String description = rs.getString("description");
-                double price = rs.getDouble("price");
-                int stock = rs.getInt("stock");
-                int category = rs.getInt("categoryID");
-                String imageUrl = rs.getString("image_url");
-                products.add(new Product(id, productName, description, price, stock, category, imageUrl));
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToProduct(rs);
+                }
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return products;
-    }
-
-    // Lấy sản phẩm theo ID
-    public Product getProductById(int id) {
-        Connection conn = Database.getConnection();
-        String sql = "SELECT * FROM products WHERE id = ?";
-        try {
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, id);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                String productName = rs.getString("name");
-                String description = rs.getString("description");
-                double price = rs.getDouble("price");
-                int stock = rs.getInt("stock");
-                int category = rs.getInt("categoryID");
-                String imageUrl = rs.getString("image_url");
-                return new Product(id, productName, description, price, stock, category, imageUrl);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error fetching product by ID: " + e.getMessage(), e);
         }
         return null;
+    }
+
+    public boolean insertProduct(Product product) {
+        String sql = "INSERT INTO products (name, description, price, stock, category_id, image_url) VALUES (?, ?, ?, ?, ?, ?)";
+        try (Connection conn = Database.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            setProductToStatement(stmt, product);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException("Error inserting product: " + e.getMessage(), e);
+        }
+    }
+
+    public boolean updateProduct(Product product) {
+        String sql = "UPDATE products SET name = ?, description = ?, price = ?, stock = ?, category_id = ?, image_url = ? WHERE id = ?";
+        try (Connection conn = Database.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            setProductToStatement(stmt, product);
+            stmt.setInt(7, product.getId());
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException("Error updating product: " + e.getMessage(), e);
+        }
+    }
+
+    public boolean deleteProduct(int id) {
+        String sql = "UPDATE products SET is_deleted = 1, deleted_at = CURRENT_TIMESTAMP WHERE id = ?";
+        try (Connection conn = Database.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException("Error deleting product: " + e.getMessage(), e);
+        }
+    }
+
+    // Khôi phục sản phẩm đã xóa
+    public boolean restoreProduct(int id) {
+        String sql = "UPDATE products SET is_deleted = 0, deleted_at = NULL WHERE id = ?";
+        try (Connection conn = Database.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException("Error restoring product: " + e.getMessage(), e);
+        }
     }
 
     public List<ProductView> getProducts(String name, int categoryID, Double minPrice, Double maxPrice) {
         StringBuilder query = new StringBuilder(
                 "SELECT p.id, p.name, p.description, p.price, p.stock, p.image_url, c.name AS categoryName " +
                         "FROM products p " +
-                        "JOIN categories c ON p.category_id = c.id WHERE 1=1"
+                        "JOIN categories c ON p.category_id = c.id WHERE 1=1 AND p.is_deleted = 0"
         );
 
         List<Object> params = new ArrayList<>();
@@ -199,29 +154,60 @@ public class ProductDAO {
         }
     }
 
-
-
     public List<Product> searchByCategoryId(int categoryId) {
         List<Product> products = new ArrayList<>();
-        Connection conn = Database.getConnection();
-        String sql = "SELECT * FROM products WHERE categoryID = ?";
-        try {
-            PreparedStatement stmt = conn.prepareStatement(sql);
+        String sql = "SELECT * FROM products WHERE category_id = ? AND is_deleted = 0";
+        try (Connection conn = Database.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
             stmt.setInt(1, categoryId);
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                int id = rs.getInt("id");
-                String name = rs.getString("name");
-                String description = rs.getString("description");
-                double price = rs.getDouble("price");
-                int stock = rs.getInt("stock");
-                int category = rs.getInt("categoryID");
-                String imageUrl = rs.getString("image_url");
-                products.add(new Product(id, name, description, price, stock, category, imageUrl));
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    products.add(mapResultSetToProduct(rs));
+                }
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error fetching products by category: " + e.getMessage(), e);
         }
         return products;
+    }
+
+    public List<Product> getDeletedProducts() {
+        List<Product> products = new ArrayList<>();
+        String sql = "SELECT * FROM products WHERE is_deleted = 1";
+        try (Connection conn = Database.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                products.add(mapResultSetToProduct(rs));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error fetching deleted products: " + e.getMessage(), e);
+        }
+        return products;
+    }
+
+    // Helper: Ánh xạ từ ResultSet sang Product
+    private Product mapResultSetToProduct(ResultSet rs) throws SQLException {
+        return new Product(
+                rs.getInt("id"),
+                rs.getString("name"),
+                rs.getString("description"),
+                rs.getDouble("price"),
+                rs.getInt("stock"),
+                rs.getInt("category_id"),
+                rs.getString("image_url")
+        );
+    }
+
+    // Helper: Gán dữ liệu từ Product vào PreparedStatement
+    private void setProductToStatement(PreparedStatement stmt, Product product) throws SQLException {
+        stmt.setString(1, product.getName());
+        stmt.setString(2, product.getDescription());
+        stmt.setDouble(3, product.getPrice());
+        stmt.setInt(4, product.getStock());
+        stmt.setInt(5, product.getCategoryID());
+        stmt.setString(6, product.getImageUrl());
     }
 }

@@ -47,8 +47,8 @@
         <td><%= product.getCategoryName() %></td>
         <td><img src="<%= product.getImageUrl() %>" alt="<%= product.getName() %>" width="100"></td>
         <td>
-          <button class="btn-edit">Edit</button>
-          <button class="btn-delete"  data-id="<%= product.getId() %>">Delete</button>
+          <button class="btn-edit" onclick="openEditForm(<%= product.getId() %>)">Edit</button>
+          <button class="btn-delete" data-id="<%= product.getId() %>">Delete</button>
         </td>
       </tr>
       <%
@@ -66,13 +66,15 @@
   </div>
 </div>
 
-<div id="overlayAddProduct" class="overlay">
+<!-- Overlay Add/Edit Product -->
+<div id="overlayProduct" class="overlay">
   <div class="overlay-content">
     <button type="button" id="btnCloseOverlay" class="btn-close">
       <i class="fas fa-times"></i>
     </button>
-    <h2>Add Product</h2>
-    <form action="/admin/ProductManage" method="post" enctype="multipart/form-data">
+    <h2 id="overlayTitle">Add Product</h2>
+    <form action="/admin/ProductManage" method="post" enctype="multipart/form-data" id="productForm">
+      <input type="hidden" id="productId" name="productId">
       <div class="form-group">
         <label for="name">Name:</label>
         <input type="text" id="name" name="name" required>
@@ -107,10 +109,10 @@
       </div>
       <div class="form-group">
         <label for="image">Image:</label>
-        <input type="file" id="image" name="image" accept="image/*" required>
+        <input type="file" id="image" name="image" accept="image/*">
       </div>
       <div class="form-group">
-        <button type="submit" class="btn-submit">Add Product</button>
+        <button type="submit" class="btn-submit">Save Product</button>
       </div>
     </form>
   </div>

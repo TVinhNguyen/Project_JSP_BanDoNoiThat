@@ -72,20 +72,20 @@ public class Products extends HttpServlet {
             req.setAttribute("products", products);
             req.setAttribute("categories", categories);
             req.getRequestDispatcher("/WebContent/Admin/ProductManage.jsp").forward(req, resp);
-//        } else {
-//            try {
-//                int id = Integer.parseInt(pathInfo.substring(1));
-//                Product product = guestBO.getProductById(id);
-//                if (product != null) {
-//                    req.setAttribute("product", product);
-//                    req.getRequestDispatcher("/product-detail.jsp").forward(req, resp);
-//                } else {
-//                    resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Product not found");
-//                }
-//            } catch (NumberFormatException e) {
-//                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-//                resp.getWriter().write("Invalid product ID");
-//            }
+        } else {
+            try {
+                int id = Integer.parseInt(pathInfo.substring(1));
+                Product product = guestBO.getProductById(id);
+                if (product != null) {
+                    req.setAttribute("product", product);
+                    req.getRequestDispatcher("/product-detail.jsp").forward(req, resp);
+                } else {
+                    resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Product not found");
+                }
+            } catch (NumberFormatException e) {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                resp.getWriter().write("Invalid product ID");
+            }
         }
     }
 

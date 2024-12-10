@@ -43,7 +43,7 @@ public class AdminBO {
         return categoryDAO.updateCategory(category);
     }
 
-    public boolean deleteCategory(String categoryId) {
+    public boolean deleteCategory(int categoryId) {
         return categoryDAO.deleteCategory(categoryId);
     }
 

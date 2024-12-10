@@ -98,4 +98,23 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+// Function to open the form for editing a product
+function openEditForm(productId) {
+    // Send an AJAX request to fetch the product data
+    fetch(`/admin/GetProduct?id=${productId}`)
+        .then(response => response.json())
+        .then(product => {
+            document.getElementById('overlayTitle').innerText = "Edit Product";
+            document.getElementById('productId').value = product.id;
+            document.getElementById('name').value = product.name;
+            document.getElementById('description').value = product.description;
+            document.getElementById('price').value = product.price;
+            document.getElementById('stock').value = product.stock;
+            document.getElementById('idcategory').value = product.categoryId;
+
+            // Open the overlay form
+            document.getElementById('overlayProduct').style.display = 'block';
+        });
+}
+
 
