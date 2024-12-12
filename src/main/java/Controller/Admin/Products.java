@@ -1,5 +1,6 @@
 package Controller.Admin;
 
+import com.google.gson.Gson;
 import model.bean.Categories;
 import model.bean.Product;
 import model.dto.ProductView;
@@ -16,10 +17,17 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Paths;
 import java.util.List;
 
+
 @WebServlet("/admin/ProductManage/*")
+@MultipartConfig(
+        fileSizeThreshold = 1024 * 1024 * 2,
+        maxFileSize = 1024 * 1024 * 10,
+        maxRequestSize = 1024 * 1024 * 50
+)
 public class Products extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private GuestBO guestBO = new GuestBO();
@@ -27,190 +35,198 @@ public class Products extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String pathInfo = req.getPathInfo();
-        System.out.println(pathInfo);
+        doPost(req, resp);
 
-        if (pathInfo == null || pathInfo.equals("/")) {
-            String name = req.getParameter("name");
-            String category = req.getParameter("category");
-            String minPriceParam = req.getParameter("minPrice");
-            String maxPriceParam = req.getParameter("maxPrice");
-
-            Double minPrice = null;
-            Double maxPrice = null;
-            int idCategory = 0;
-            if (minPriceParam != null) {
-                try {
-                    minPrice = Double.parseDouble(minPriceParam);
-                } catch (NumberFormatException e) {
-                    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    resp.getWriter().write("Invalid minPrice");
-                    return;
-                }
-            }
-
-            if (maxPriceParam != null) {
-                try {
-                    maxPrice = Double.parseDouble(maxPriceParam);
-                } catch (NumberFormatException e) {
-                    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    resp.getWriter().write("Invalid maxPrice");
-                    return;
-                }
-            }
-            if(category != null) {
-                try{
-                    idCategory = Integer.parseInt(category);
-                } catch (NumberFormatException e) {
-                    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    resp.getWriter().write("Invalid category");
-                    return;
-                }
-            }
-            List<ProductView> products = guestBO.getProducts(name,idCategory, minPrice, maxPrice);
-            List<Categories> categories = adminBO.getAllCategories();
-            req.setAttribute("products", products);
-            req.setAttribute("categories", categories);
-            req.getRequestDispatcher("/WebContent/Admin/ProductManage.jsp").forward(req, resp);
-        } else {
-            try {
-                int id = Integer.parseInt(pathInfo.substring(1));
-                Product product = guestBO.getProductById(id);
-                if (product != null) {
-                    req.setAttribute("product", product);
-                    req.getRequestDispatcher("/product-detail.jsp").forward(req, resp);
-                } else {
-                    resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Product not found");
-                }
-            } catch (NumberFormatException e) {
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                resp.getWriter().write("Invalid product ID");
-            }
-        }
     }
 
+        @Override
+        protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+            req.setCharacterEncoding("UTF-8");
+            resp.setCharacterEncoding("UTF-8");
 
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws  IOException {
-        User user = (User) req.getSession().getAttribute("user");
-        System.out.println(req.getParameter("name"));
-        if (user != null && "admin".equals(user.getRole())) {
+            String pathInfo = req.getPathInfo();
+            User user = (User) req.getSession().getAttribute("user");
+
+            if (user == null || !"admin".equals(user.getRole())) {
+                resp.sendRedirect("/");
+                return;
+            }
+
+            if (pathInfo == null ) {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                resp.getWriter().write("Action is missing");
+                return;
+            }
+
+            String action = pathInfo.substring(1).toLowerCase(); // Action from pathInfo
             try {
-                String name = req.getParameter("name");
-                String description = req.getParameter("description");
-                double price = Double.parseDouble(req.getParameter("price"));
-                int stock = Integer.parseInt(req.getParameter("stock"));
-                int idCategory = Integer.parseInt(req.getParameter("idcategory"));
+                switch (action) {
+                    case "":
+                        viewProduct(req, resp);
+                        break;
+                    case "create":
+                        createProduct(req, resp);
+                        break;
+                    case "update":
+                        updateProduct(req, resp);
+                        break;
 
-                Part imagePart = req.getPart("image");
-                String originalImageName = Paths.get(imagePart.getSubmittedFileName()).getFileName().toString();
-                String newImageName = System.currentTimeMillis() + ".webp";
-
-                String uploadPath = getServletContext().getRealPath("") + File.separator + "Image";
-                File uploadDir = new File(uploadPath);
-                if (!uploadDir.exists()) {
-                    uploadDir.mkdir();
-                }
-
-                String filePath = uploadPath + File.separator + newImageName;
-                imagePart.write(filePath);
-
-                // Set the database image path (relative path)
-                String databaseImagePath = "../Image/" + newImageName;
-
-                // Create and save product
-                Product product = new Product(name, description, price, stock, idCategory, databaseImagePath);
-                boolean success = adminBO.addProduct(product);
-
-                if (success) {
-                    resp.setStatus(HttpServletResponse.SC_CREATED);
-                    resp.getWriter().write("Product created successfully");
-                } else {
-                    resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                    resp.getWriter().write("Failed to create product");
+                    case "delete":
+                        deleteProduct(req, resp);
+                        break;
+                    case "edit":
+                        viewEdit(req,resp);
+                        break;
+                    default:
+                        resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                        resp.getWriter().write("Invalid action");
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 resp.getWriter().write("Error processing request: " + e.getMessage());
             }
+        }
+
+        private void createProduct(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+            String name = req.getParameter("name");
+            String description = req.getParameter("description");
+            double price = Double.parseDouble(req.getParameter("price"));
+            int stock = Integer.parseInt(req.getParameter("stock"));
+            int idCategory = Integer.parseInt(req.getParameter("idcategory"));
+
+            Part imagePart = req.getPart("image");
+            String originalImageName = Paths.get(imagePart.getSubmittedFileName()).getFileName().toString();
+            String newImageName = System.currentTimeMillis() + ".webp";
+
+            String uploadPath = "D:/Study/Servlet/Project_JSP_BanDoNoiThat/src/main/webapp/Image";
+            File uploadDir = new File(uploadPath);
+            if (!uploadDir.exists()) {
+                uploadDir.mkdir();
+            }
+
+            String filePath = uploadPath + File.separator + newImageName;
+
+            imagePart.write(filePath);
+
+            String databaseImagePath = "/Image/" + newImageName;
+
+
+            Product product = new Product(name, description, price, stock, idCategory, databaseImagePath);
+            boolean success = adminBO.addProduct(product);
+            if (success) {
+                resp.sendRedirect("/admin/ProductManage/");
+            } else {
+                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                resp.getWriter().write("Failed to create product");
+            }
+        }
+
+    private void updateProduct(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+        int id = Integer.parseInt(req.getParameter("productId"));
+        String name = req.getParameter("name");
+        String description = req.getParameter("description");
+        double price = Double.parseDouble(req.getParameter("price"));
+        int stock = Integer.parseInt(req.getParameter("stock"));
+        int idCategory = Integer.parseInt(req.getParameter("idcategory"));
+
+        Part imagePart = req.getPart("image");
+        String databaseImagePath = null;
+
+        if (imagePart != null && imagePart.getSize() > 0) {
+            String originalImageName = Paths.get(imagePart.getSubmittedFileName()).getFileName().toString();
+            String newImageName = System.currentTimeMillis() + ".webp";
+
+            String uploadPath = "D:/Study/Servlet/Project_JSP_BanDoNoiThat/src/main/webapp/Image";
+            File uploadDir = new File(uploadPath);
+            if (!uploadDir.exists()) {
+                uploadDir.mkdir();
+            }
+
+            String filePath = uploadPath + File.separator + newImageName;
+            imagePart.write(filePath);
+
+            databaseImagePath = "/Image/" + newImageName;
         } else {
-            resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            resp.getWriter().write("Unauthorized access");
+            databaseImagePath = req.getParameter("currentImage");
+        }
+
+        Product product = new Product(id, name, description, price, stock, idCategory, databaseImagePath);
+        boolean success = adminBO.updateProduct(product);
+
+        if (success) {
+            resp.sendRedirect("/admin/ProductManage/");
+        } else {
+            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            resp.getWriter().write("Product not found");
         }
     }
 
+    private  void viewEdit(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+            int id = Integer.parseInt(req.getParameter("id"));
+            Product product = adminBO.getProductById(id);
 
-    @Override
-    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        User user = (User) req.getSession().getAttribute("user");
 
-        if (user != null && "admin".equals(user.getRole())) {
-            String pathInfo = req.getPathInfo();
-            if (pathInfo == null || pathInfo.equals("/")) {
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                resp.getWriter().write("Product ID is missing");
-                return;
+            resp.setContentType("application/json");
+            PrintWriter out = resp.getWriter();
+            out.print(new Gson().toJson(product));
+            out.flush();
+        }
+        private void deleteProduct(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+            int id = Integer.parseInt(req.getParameter("id"));
+            boolean success = adminBO.deleteProduct(id);
+
+            if (success) {
+                resp.sendRedirect("/admin/ProductManage/");
+            } else {
+                resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                resp.getWriter().write("Product not found");
             }
+        }
+    private void viewProduct(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+        String name = req.getParameter("name");
+        String category = req.getParameter("category");
+        String minPriceParam = req.getParameter("minPrice");
+        String maxPriceParam = req.getParameter("maxPrice");
+
+        Double minPrice = null;
+        Double maxPrice = null;
+        int idCategory = 0;
+        if (minPriceParam != null) {
             try {
-                int id = Integer.parseInt(pathInfo.substring(1));
-
-                String name = req.getParameter("name");
-                String description = req.getParameter("description");
-                double price = Double.parseDouble(req.getParameter("price"));
-                int stock = Integer.parseInt(req.getParameter("stock"));
-                int idCategory = Integer.parseInt(req.getParameter("idcategory"));
-                String image = req.getParameter("image");
-
-                Product product = new Product(id, name, description, price, stock, idCategory, image);
-                boolean success = adminBO.updateProduct(product);
-
-                if (success) {
-                    resp.setStatus(HttpServletResponse.SC_OK);
-                    resp.getWriter().write("Product updated successfully");
-                } else {
-                    resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                    resp.getWriter().write("Product not found");
-                }
+                minPrice = Double.parseDouble(minPriceParam);
             } catch (NumberFormatException e) {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                resp.getWriter().write("Invalid product ID");
-            }
-        } else {
-            resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            resp.getWriter().write("Unauthorized access");
-        }
-    }
-
-    @Override
-    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        User user = (User) req.getSession().getAttribute("user");
-
-        if (user != null && "admin".equals(user.getRole())) {
-            String pathInfo = req.getPathInfo();
-            if (pathInfo == null || pathInfo.equals("/")) {
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                resp.getWriter().write("Product ID is missing");
+                resp.getWriter().write("Invalid minPrice");
                 return;
             }
-            try {
-                int id = Integer.parseInt(pathInfo.substring(1));
-                boolean success = adminBO.deleteProduct(id);
+        }
 
-                if (success) {
-                    resp.setStatus(HttpServletResponse.SC_OK);
-                    resp.getWriter().write("Product deleted successfully");
-                } else {
-                    resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                    resp.getWriter().write("Product not found");
-                }
+        if (maxPriceParam != null) {
+            try {
+                maxPrice = Double.parseDouble(maxPriceParam);
             } catch (NumberFormatException e) {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                resp.getWriter().write("Invalid product ID");
+                resp.getWriter().write("Invalid maxPrice");
+                return;
             }
-        } else {
-            resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            resp.getWriter().write("Unauthorized access");
         }
+        if(category != null) {
+            try{
+                idCategory = Integer.parseInt(category);
+            } catch (NumberFormatException e) {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                resp.getWriter().write("Invalid category");
+                return;
+            }
+        }
+        List<ProductView> products = guestBO.getProducts(name,idCategory, minPrice, maxPrice);
+        List<Categories> categories = adminBO.getAllCategories();
+        req.setAttribute("products", products);
+        req.setAttribute("categories", categories);
+        req.getRequestDispatcher("/WebContent/Admin/ProductManage.jsp").forward(req, resp);
     }
+
 }
+
+

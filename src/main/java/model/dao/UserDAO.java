@@ -23,7 +23,7 @@ public class UserDAO {
 
     public List<User> getAllUsers() {
         List<User> users = new ArrayList<>();
-        String sql = "SELECT * FROM users WHERE is_deleted = 0";
+        String sql = "SELECT * FROM users WHERE is_deleted = 0 AND role = 'user'";
         try (Connection conn = Database.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
@@ -36,6 +36,7 @@ public class UserDAO {
         }
         return users;
     }
+
 
     public User getUserById(int id) {
         String sql = "SELECT * FROM users WHERE id = ? AND is_deleted = 0";

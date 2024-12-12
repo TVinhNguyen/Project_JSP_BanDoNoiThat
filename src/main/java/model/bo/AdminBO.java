@@ -29,6 +29,7 @@ public class AdminBO {
     public boolean deleteUser(int userId) {
         return userDAO.deleteUser(userId);
     }
+    public  User getUserById(int userId) {return userDAO.getUserById(userId);}
 
     // Quản lý danh mục
     public List<Categories> getAllCategories() {
@@ -82,5 +83,6 @@ public class AdminBO {
     public List<OrderDetailsView> getOrderDetailsByOrderId(String orderId) {
         return orderDetailDAO.getOrderDetailsByOrderId(orderId);
     }
+
 
 }

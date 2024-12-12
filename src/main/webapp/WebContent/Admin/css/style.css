@@ -186,6 +186,9 @@ table tr:hover {
 /* Input và textarea */
 .form-group input[type="text"],
 .form-group input[type="number"],
+.form-group input[type="password"],
+.form-group input[type="email"],
+.form-group input[type="tel"],
 .form-group textarea,
 .form-group select {
     width: 100%;
@@ -195,6 +198,8 @@ table tr:hover {
     border-radius: 4px;
     box-sizing: border-box;
 }
+
+
 
 input[type="file"] {
     display: block;

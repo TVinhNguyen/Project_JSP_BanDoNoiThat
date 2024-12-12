@@ -2,6 +2,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const btnAddProduct = document.getElementById("btnAddProduct");
     const overlay = document.getElementById("overlayAddProduct");
     const btnCloseOverlay = document.getElementById("btnCloseOverlay");
+    const btnCloseOverlaye = document.getElementById("btnCloseOverlaye");
+
 
     btnAddProduct.addEventListener("click", () => {
         overlay.style.display = "flex";
@@ -9,6 +11,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     btnCloseOverlay.addEventListener("click", () => {
         overlay.style.display = "none";
+    });
+    btnCloseOverlaye.addEventListener("click", () => {
+        document.getElementById('overlayEditProduct').style.display = "none";
     });
 
     // Close overlay when clicking outside of it
@@ -64,57 +69,33 @@ function openOverlay() {
     overlay.style.display = 'flex';
 }
 
-// delete
-document.addEventListener('DOMContentLoaded', function() {
-    const deleteButtons = document.querySelectorAll('.btn-delete');
 
-    deleteButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const productId = button.getAttribute('data-id');
 
-            const confirmDelete = confirm("Are you sure you want to delete this product?");
+function openDeleteForm(productId) {
+    window.location.href = `/admin/ProductManage/delete?id=${productId}`;
+}
 
-            if (confirmDelete) {
-                fetch(`/admin/ProductManage/${productId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
-                    .then(response => {
-                        if (response.ok) {
-                            alert("Product deleted successfully.");
-                            window.location.reload(); // Refresh the page to reflect the changes
-                        } else {
-                            alert("Failed to delete the product.");
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert("Error deleting product.");
-                    });
-            }
-        });
-    });
-});
-
-// Function to open the form for editing a product
 function openEditForm(productId) {
-    // Send an AJAX request to fetch the product data
-    fetch(`/admin/GetProduct?id=${productId}`)
+    fetch(`/admin/ProductManage/edit?id=${productId}`)
         .then(response => response.json())
-        .then(product => {
-            document.getElementById('overlayTitle').innerText = "Edit Product";
-            document.getElementById('productId').value = product.id;
-            document.getElementById('name').value = product.name;
-            document.getElementById('description').value = product.description;
-            document.getElementById('price').value = product.price;
-            document.getElementById('stock').value = product.stock;
-            document.getElementById('idcategory').value = product.categoryId;
+        .then(data => {
+            document.getElementById('productIde').value = data.id;
+            document.getElementById('namee').value = data.name;
+            document.getElementById('descriptione').value = data.description;
+            document.getElementById('pricee').value = data.price;
+            document.getElementById('stocke').value = data.stock;
+            document.getElementById('idcategorye').value = data.categoryID;
+            document.getElementById('currentImagePreview').src = data.imageUrl;
+            document.getElementById('currentImage').value = data.imageUrl;
 
-            // Open the overlay form
-            document.getElementById('overlayProduct').style.display = 'block';
+
+            document.getElementById('overlayEditProduct').style.display = 'flex';
+        })
+        .catch(error => {
+            console.error('Error fetching product:', error);
+            alert('Không thể tải dữ liệu sản phẩm.');
         });
 }
+
 
 

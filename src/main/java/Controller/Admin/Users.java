@@ -1,177 +1,142 @@
 package Controller.Admin;
 
+import com.google.gson.Gson;
 import model.bean.User;
 import model.bo.AdminBO;
-import model.bo.UserBO;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
-import javax.servlet.http.*;
-
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.List;
 
 @WebServlet("/admin/UserManage/*")
 public class Users extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private AdminBO adminBO = new AdminBO();
-    private UserBO userBO = new UserBO();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        User loggedInUser = (User) req.getSession().getAttribute("user");
-
-        if (loggedInUser == null) {
-            resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            resp.getWriter().write("Unauthorized access");
-            return;
-        }
-
-        String pathInfo = req.getPathInfo();
-
-        if (loggedInUser.getRole().equals("admin")) {
-            if (pathInfo == null || pathInfo.equals("/")) {
-                String username = req.getParameter("username");
-                String role = req.getParameter("role");
-
-                List<User> users = adminBO.getAllUsers();
-                req.setAttribute("users", users);
-                req.getRequestDispatcher("/WebContent/Admin/UserManage.jsp").forward(req, resp);
-            } else {
-                try {
-                    int id = Integer.parseInt(pathInfo.substring(1));
-                    User user = userBO.getUserById(id);
-
-                    if (user != null) {
-                        req.setAttribute("user", user);
-                        req.getRequestDispatcher("/WebContent/user-details.jsp").forward(req, resp);
-                    } else {
-                        resp.sendError(HttpServletResponse.SC_NOT_FOUND, "User not found");
-                    }
-                } catch (NumberFormatException e) {
-                    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    resp.getWriter().write("Invalid user ID");
-                }
-            }
-        } else {
-            // User: Chỉ được xem thông tin của bản thân
-            if (pathInfo == null || pathInfo.equals("/") ||
-                    !pathInfo.substring(1).equals(String.valueOf(loggedInUser.getId()))) {
-                resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                resp.getWriter().write("You are only allowed to view your own information");
-            } else {
-                req.setAttribute("user", loggedInUser);
-                req.getRequestDispatcher("/WebContent/user-details.jsp").forward(req, resp);
-            }
-        }
+        doPost(req, resp);
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        User loggedInUser = (User) req.getSession().getAttribute("user");
+        req.setCharacterEncoding("UTF-8");
+        resp.setCharacterEncoding("UTF-8");
 
-        if (loggedInUser != null && "admin".equals(loggedInUser.getRole())) {
-            // Admin thêm người dùng
-            String username = req.getParameter("username");
-            String password = req.getParameter("password");
-            String role = req.getParameter("role");
-            String fullName = req.getParameter("fullName");
-            String email = req.getParameter("email");
-            String phone = req.getParameter("phone");
-            String address = req.getParameter("address");
+        String pathInfo = req.getPathInfo();
+        User user = (User) req.getSession().getAttribute("user");
 
-            User user = new User(username, password, role, fullName, email, phone, address);
-            boolean success = adminBO.addUser(user);
+        if (user == null || !"admin".equals(user.getRole())) {
+            resp.sendRedirect("/");
+            return;
+        }
 
-            if (success) {
-                resp.setStatus(HttpServletResponse.SC_CREATED);
-                resp.getWriter().write("User created successfully");
-            } else {
-                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                resp.getWriter().write("Failed to create user");
+        if (pathInfo == null) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().write("Action is missing");
+            return;
+        }
+
+        String action = pathInfo.substring(1).toLowerCase(); // Action from pathInfo
+        try {
+            switch (action) {
+                case "":
+                    viewUsers(req, resp);
+                    break;
+                case "create":
+                    createUser(req, resp);
+                    break;
+                case "update":
+                    updateUser(req, resp);
+                    break;
+                case "delete":
+                    deleteUser(req, resp);
+                    break;
+                case "edit":
+                    viewEdit(req, resp);
+                    break;
+                default:
+                    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    resp.getWriter().write("Invalid action");
             }
-        } else {
-            resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            resp.getWriter().write("Unauthorized access");
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            resp.getWriter().write("Error processing request: " + e.getMessage());
         }
     }
 
-    @Override
-    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        User loggedInUser = (User) req.getSession().getAttribute("user");
+    private void createUser(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+        String username = req.getParameter("username");
+        String password = req.getParameter("password");
+        String role = req.getParameter("role");
+        String fullName = req.getParameter("fullName");
+        String email = req.getParameter("email");
+        String phone = req.getParameter("phone");
+        String address = req.getParameter("address");
 
-        if (loggedInUser != null && "admin".equals(loggedInUser.getRole())) {
-            // Admin sửa thông tin người dùng
-            String pathInfo = req.getPathInfo();
+        User user = new User(username, password, role, fullName, email, phone, address);
+        boolean success = adminBO.addUser(user);
 
-            if (pathInfo == null || pathInfo.equals("/")) {
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                resp.getWriter().write("User ID is missing");
-                return;
-            }
-            try {
-                int id = Integer.parseInt(pathInfo.substring(1));
-
-                String username = req.getParameter("username");
-                String password = req.getParameter("password");
-                String role = req.getParameter("role");
-                String fullName = req.getParameter("fullName");
-                String email = req.getParameter("email");
-                String phone = req.getParameter("phone");
-                String address = req.getParameter("address");
-
-                User user = new User(id, username, password, role, fullName, email, phone, address);
-                boolean success = adminBO.updateUser(user);
-
-                if (success) {
-                    resp.setStatus(HttpServletResponse.SC_OK);
-                    resp.getWriter().write("User updated successfully");
-                } else {
-                    resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                    resp.getWriter().write("User not found");
-                }
-            } catch (NumberFormatException e) {
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                resp.getWriter().write("Invalid user ID");
-            }
+        if (success) {
+            resp.sendRedirect("/admin/UserManage/");
         } else {
-            resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            resp.getWriter().write("Unauthorized access");
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            resp.getWriter().write("Failed to create user");
         }
     }
 
-    @Override
-    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        User loggedInUser = (User) req.getSession().getAttribute("user");
+    private void updateUser(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+        int id = Integer.parseInt(req.getParameter("userId"));
+        String username = req.getParameter("username");
+        String password = req.getParameter("password");
+        String role = req.getParameter("role");
+        String fullName = req.getParameter("fullName");
+        String email = req.getParameter("email");
+        String phone = req.getParameter("phone");
+        String address = req.getParameter("address");
 
-        if (loggedInUser != null && "admin".equals(loggedInUser.getRole())) {
-            // Admin xóa người dùng
-            String pathInfo = req.getPathInfo();
+        User user = new User(id, username, password, role, fullName, email, phone, address);
+        boolean success = adminBO.updateUser(user);
 
-            if (pathInfo == null || pathInfo.equals("/")) {
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                resp.getWriter().write("User ID is missing");
-                return;
-            }
-            try {
-                int id = Integer.parseInt(pathInfo.substring(1));
-                boolean success = adminBO.deleteUser(id);
-
-                if (success) {
-                    resp.setStatus(HttpServletResponse.SC_OK);
-                    resp.getWriter().write("User deleted successfully");
-                } else {
-                    resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                    resp.getWriter().write("User not found");
-                }
-            } catch (NumberFormatException e) {
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                resp.getWriter().write("Invalid user ID");
-            }
+        if (success) {
+            resp.sendRedirect("/admin/UserManage/");
         } else {
-            resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            resp.getWriter().write("Unauthorized access");
+            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            resp.getWriter().write("User not found");
         }
+    }
+
+    private void deleteUser(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+        int id = Integer.parseInt(req.getParameter("id"));
+        boolean success = adminBO.deleteUser(id);
+
+        if (success) {
+            resp.sendRedirect("/admin/UserManage/");
+        } else {
+            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            resp.getWriter().write("User not found");
+        }
+    }
+
+    private void viewEdit(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+        int id = Integer.parseInt(req.getParameter("id"));
+        User user = adminBO.getUserById(id);
+
+        resp.setContentType("application/json");
+        PrintWriter out = resp.getWriter();
+        out.print(new Gson().toJson(user));
+        out.flush();
+    }
+
+    private void viewUsers(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+        List<User> users = adminBO.getAllUsers();
+        req.setAttribute("users", users);
+        req.getRequestDispatcher("/WebContent/Admin/UserManage.jsp").forward(req, resp);
     }
 }
