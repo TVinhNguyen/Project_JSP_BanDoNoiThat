@@ -18,7 +18,6 @@ import java.util.List;
 public class Orders extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private AdminBO adminBO = new AdminBO();
-    private UserBO userBO = new UserBO();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
