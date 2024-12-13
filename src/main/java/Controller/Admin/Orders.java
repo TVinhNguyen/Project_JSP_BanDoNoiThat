@@ -6,6 +6,7 @@ import model.bean.User;
 import model.bo.AdminBO;
 import model.bo.UserBO;
 import model.dto.OrderDetailsView;
+import model.dto.OrderView;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -49,6 +50,9 @@ public class Orders extends HttpServlet {
                 case "":
                     viewOrders(req, resp);
                     break;
+                case "orderuser":
+                    viewOrderUser(req, resp);
+                    break;
 //                case "update":
 //                    updateOrder(req, resp);
 //                    break;
@@ -73,9 +77,22 @@ public class Orders extends HttpServlet {
     }
 
     private void viewOrders(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        List<Order> orders = adminBO.getAllOrders();
+        List<OrderView> orders = adminBO.getAllOrders();
         req.setAttribute("orders", orders);
         req.getRequestDispatcher("/WebContent/Admin/OrderManage.jsp").forward(req, resp);
+    }
+    private void viewOrderUser(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String UserId = req.getParameter("userId");
+        if (UserId != null && !UserId.isEmpty()) {
+            List<OrderView> orders = adminBO.getOrderByIdUserId(Integer.parseInt(UserId));
+            req.setAttribute("orders", orders);
+            req.getRequestDispatcher("/WebContent/Admin/OrderManage.jsp").forward(req, resp);
+        } else
+        {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Order ID is required");
+        }
+
+
     }
 
 //    private void createOrder(HttpServletRequest req, HttpServletResponse resp) throws Exception {

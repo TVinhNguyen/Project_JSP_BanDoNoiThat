@@ -37,7 +37,7 @@
                 if (users != null && !users.isEmpty()) {
                     for (User user : users) {
             %>
-            <tr onclick="window.location.href='/admin/UserManage/orderDetails?userId=<%= user.getId() %>'">
+            <tr onclick="window.location.href='/admin/OrderManage/orderUser?userId=<%= user.getId() %>'">
                 <td><%= user.getId() %></td>
                 <td><%= user.getUsername() %></td>
                 <td><%= user.getFullName() %></td>
@@ -46,8 +46,8 @@
                 <td><%= user.getAddress() %></td>
                 <td><%= user.getRole() %></td>
                 <td>
-                    <button class="btn-edit" onclick="openEditForm('<%= user.getId() %>')">Edit</button>
-                    <button class="btn-delete" onclick="openDeleteForm('<%= user.getId() %>')">Delete</button>
+                    <button class="btn-edit" onclick="openEditForm('<%= user.getId() %>'); event.stopPropagation();">Edit</button>
+                    <button class="btn-delete" onclick="openDeleteForm('<%= user.getId() %>'); event.stopPropagation();">Delete</button>
                 </td>
             </tr>
             <%

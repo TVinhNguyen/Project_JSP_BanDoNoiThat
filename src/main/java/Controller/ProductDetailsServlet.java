@@ -16,6 +16,8 @@ public class ProductDetailsServlet extends HttpServlet {
     private AdminBO adminBO = new AdminBO();
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
         String productId = request.getParameter("id");
 
         if (productId != null) {

@@ -3,6 +3,7 @@ package model.bo;
 import model.dao.*;
 import model.bean.*;
 import model.dto.OrderDetailsView;
+import model.dto.OrderView;
 
 import java.util.List;
 
@@ -72,11 +73,11 @@ public class AdminBO {
     }
 
     // Quản lý đơn hàng
-    public List<Order> getAllOrders() {
+    public List<OrderView> getAllOrders() {
         return orderDAO.getAllOrders();
     }
 
-    public List<Order> getOrderByIdUserId(int idUser) {return  orderDAO.getOrdersByUserId(idUser);}
+    public List<OrderView> getOrderByIdUserId(int idUser) {return  orderDAO.getOrdersByUserId(idUser);}
 
     public Order getOrder(int orderId) {return orderDAO.getOrderById(orderId);}
 

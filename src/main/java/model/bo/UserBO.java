@@ -10,19 +10,16 @@ public class UserBO {
         private OrderDetailDAO orderDetailDAO = new OrderDetailDAO();
         private ProductDAO productDAO = new ProductDAO();
 
-        // Xem thông tin cá nhân
         public User getUserById(int userId) {
             return userDAO.getUserById(userId);
         }
 
-        // Cập nhật thông tin cá nhân
         public boolean updateUserProfile(User user) {
             return userDAO.updateUser(user);
         }
 
-        // Xem đơn hàng của mình
 
-        public List<Order> getOrdersByUserId(int userId) {
+        public List<OrderView> getOrdersByUserId(int userId) {
             return orderDAO.getOrdersByUserId(userId);
         }
 

@@ -2,24 +2,29 @@ package model.dao;
 
 import DB.Database;
 import model.bean.Order;
+import model.bean.OrderDetail;
+import model.dto.OrderDetailsView;
+import model.dto.OrderView;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class OrderDAO {
-    public List<Order> getAllOrders() {
-        List<Order> orders = new ArrayList<>();
-        String sql = "SELECT * FROM orders WHERE is_deleted = 0";
+    public List<OrderView> getAllOrders() {
+        List<OrderView> orders = new ArrayList<>();
+        String sql = "SELECT o.*,u.full_name as full_name FROM orders o " +
+                "JOIN users u ON o.user_id = u.id WHERE o.is_deleted = 0";
         try (Connection conn = Database.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 int orderId = rs.getInt("id");
                 int userId = rs.getInt("user_id");
+                String fullName = rs.getString("full_name");
                 Date orderDate = rs.getDate("order_date");
                 double totalAmount = rs.getDouble("total_amount");
-                orders.add(new Order(orderId, userId, orderDate, totalAmount));
+                orders.add(new OrderView(orderId, userId,fullName, orderDate, totalAmount));
             }
         } catch (SQLException e) {
             throw new RuntimeException("Error fetching all orders: " + e.getMessage(), e);
@@ -27,24 +32,48 @@ public class OrderDAO {
         return orders;
     }
 
-    public List<Order> getOrdersByUserId(int userId) {
-        List<Order> orders = new ArrayList<>();
-        String sql = "SELECT * FROM orders WHERE user_id = ? AND is_deleted = 0";
+    public List<OrderView> getOrdersByUserId(int userId) {
+        List<OrderView> orders = new ArrayList<>();
+        String sql = "SELECT o.*,u.full_name AS full_name FROM orders o "+
+                "JOIN users u ON o.user_id = u.id WHERE o.user_id = ? AND o.is_deleted = 0 ";
         try (Connection conn = Database.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, userId);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     int orderId = rs.getInt("id");
+                    String fullName = rs.getString("full_name");
                     Date orderDate = rs.getDate("order_date");
                     double totalAmount = rs.getDouble("total_amount");
-                    orders.add(new Order(orderId, userId, orderDate, totalAmount));
+                    orders.add(new OrderView(orderId,userId,fullName,orderDate,totalAmount));
                 }
             }
         } catch (SQLException e) {
             throw new RuntimeException("Error fetching orders by user ID: " + e.getMessage(), e);
         }
         return orders;
+    }
+    public List<OrderDetailsView> getOrderDetailsByOrderId(String orderId) {
+        List<OrderDetailsView> orderDetailsViews = new ArrayList<>();
+        String sql = "SELECT od.*, p.name AS productName FROM order_details od " +
+                "JOIN products p ON od.product_id = p.id WHERE od.order_id = ?";
+        try (Connection conn = Database.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, orderId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    int id = rs.getInt("id");
+                    String productId = rs.getString("product_id");
+                    String productName = rs.getString("productName");
+                    int quantity = rs.getInt("quantity");
+                    double price = rs.getDouble("price");
+                    orderDetailsViews.add(new OrderDetailsView(id, orderId, productId, productName, quantity, price));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error fetching order details by orderId: " + e.getMessage(), e);
+        }
+        return orderDetailsViews;
     }
 
     public Order getOrderById(int orderId) {

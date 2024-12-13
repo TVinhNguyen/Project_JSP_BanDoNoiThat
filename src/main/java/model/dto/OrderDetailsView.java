@@ -4,7 +4,7 @@ public class OrderDetailsView {
     private int id;
     private String orderId;
     private String productId;
-    private String productName;  // Thêm tên sản phẩm
+    private String productName;
     private int quantity;
     private double price;
 

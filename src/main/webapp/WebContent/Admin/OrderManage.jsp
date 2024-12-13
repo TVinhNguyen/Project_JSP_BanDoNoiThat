@@ -1,6 +1,7 @@
 <%@ page import="java.util.List" %>
 <%@ page import="model.bean.Order" %>
 <%@ page import="model.bean.OrderDetail" %>
+<%@ page import="model.dto.OrderView" %>
 <%@ page language="java" contentType="text/html; charset=UTF-8" %>
 <!DOCTYPE html>
 <html lang="en">
@@ -21,7 +22,7 @@
             <thead>
             <tr>
                 <th>Order ID</th>
-                <th>User ID</th>
+                <th>Customer Name</th>
                 <th>Order Date</th>
                 <th>Total Amount</th>
                 <th>Actions</th>
@@ -29,13 +30,13 @@
             </thead>
             <tbody>
             <%
-                List<Order> orders = (List<Order>) request.getAttribute("orders");
+                List<OrderView> orders = (List<OrderView>) request.getAttribute("orders");
                 if (orders != null && !orders.isEmpty()) {
-                    for (Order order : orders) {
+                    for (OrderView order : orders) {
             %>
             <tr>
                 <td><%= order.getOrderId() %></td>
-                <td><%= order.getUserId() %></td>
+                <td><%= order.getCustomerName() %></td>
                 <td><%= order.getOrderDate() %></td>
                 <td><%= order.getTotalAmount() %></td>
                 <td>
