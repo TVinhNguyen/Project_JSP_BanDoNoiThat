@@ -9,6 +9,7 @@
   <div class="sidebar">
     <h2>Admin Dashboard</h2>
     <ul>
+      <li><a href="/admin/default/">Home </a></li>
       <li><a href="/admin/ProductManage/">Manage Products</a></li>
       <li><a href="/admin/UserManage/">Manage Users</a></li>
       <li><a href="/admin/OrderManage/">View Orders</a></li>

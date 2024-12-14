@@ -42,8 +42,7 @@
         <td><%= product.getId() %></td>
         <td><%= product.getName() %></td>
         <td><%= product.getDescription() %></td>
-        <td><%= product.getPrice() %></td>
-        <td><%= product.getStock() %></td>
+        <td><%= new java.text.DecimalFormat("#,###.##").format(product.getPrice()) %> VND</td>        <td><%= product.getStock() %></td>
         <td><%= product.getCategoryName() %></td>
         <td><img src="<%= product.getImageUrl() + "?timestamp=" + System.currentTimeMillis() %>" alt="<%= product.getName() %>" width="100"></td>
         <td>

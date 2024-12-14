@@ -80,8 +80,8 @@
       <tr>
         <td><span class="btn-view-details" onclick="viewProductDetails('<%= detail.getProductId() %>')"><%= detail.getProductName() %></span></td>
         <td><%= detail.getQuantity() %></td>
-        <td><%= detail.getPrice() %></td>
-        <td><%= detail.getQuantity() * detail.getPrice() %></td>
+        <td><%= new java.text.DecimalFormat("#,###.##").format(detail.getPrice()) %> VND</td>
+        <td><%= new java.text.DecimalFormat("#,###.##").format(detail.getQuantity() * detail.getPrice()) %> VND</td>
       </tr>
       <%
         }

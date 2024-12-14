@@ -38,7 +38,7 @@
                 <td><%= order.getOrderId() %></td>
                 <td><%= order.getCustomerName() %></td>
                 <td><%= order.getOrderDate() %></td>
-                <td><%= order.getTotalAmount() %></td>
+                <td><%= new java.text.DecimalFormat("#,###.##").format(order.getTotalAmount()) %> VND</td>
                 <td>
                     <a href="/admin/OrderManage/orderDetails?orderId=<%= order.getOrderId() %>">
                         <button class="btn-view-details">View Details</button>

@@ -5,7 +5,9 @@ import model.bean.*;
 import model.dto.OrderDetailsView;
 import model.dto.OrderView;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 public class AdminBO {
     private UserDAO userDAO = new UserDAO();
@@ -83,6 +85,10 @@ public class AdminBO {
 
     public List<OrderDetailsView> getOrderDetailsByOrderId(String orderId) {
         return orderDetailDAO.getOrderDetailsByOrderId(orderId);
+    }
+    public Map<LocalDate, Integer> getOrdersInMonth(int month , int year)
+    {
+        return orderDAO.getOrdersInMonth(month,year);
     }
 
 

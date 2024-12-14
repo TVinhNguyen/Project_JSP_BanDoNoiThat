@@ -6,9 +6,13 @@ import model.bean.OrderDetail;
 import model.dto.OrderDetailsView;
 import model.dto.OrderView;
 
+import javax.xml.crypto.Data;
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class OrderDAO {
     public List<OrderView> getAllOrders() {
@@ -29,6 +33,32 @@ public class OrderDAO {
         } catch (SQLException e) {
             throw new RuntimeException("Error fetching all orders: " + e.getMessage(), e);
         }
+        return orders;
+    }
+    public  Map<LocalDate, Integer> getOrdersInMonth(int month, int year) {
+        Map<LocalDate, Integer> orders = new HashMap<>();
+        try (Connection conn = Database.getConnection()) {
+            String query = "SELECT DATE(order_date) as date, COUNT(*) as count " +
+                    "FROM orders " +
+                    "WHERE MONTH(order_date) = ? AND YEAR(order_date) = ? " +
+                    "GROUP BY DATE(order_date)";
+
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setInt(1, month);
+                stmt.setInt(2, year);
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        LocalDate date = rs.getDate("date").toLocalDate();
+                        int count = rs.getInt("count");
+                        orders.put(date, count);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
         return orders;
     }
 
