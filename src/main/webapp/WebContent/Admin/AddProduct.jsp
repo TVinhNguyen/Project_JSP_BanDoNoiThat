@@ -36,7 +36,7 @@
                 <select id="idcategory" name="idcategory" required>
                     <option value="" disabled selected>-- Select Category --</option>
                     <%
-                        List<Categories> categoriesList = (List<Categories>) request.getAttribute("categories");
+                        categoriesList = (List<Categories>) request.getAttribute("categories");
                         if (categoriesList != null && !categoriesList.isEmpty()) {
                             for (Categories category : categoriesList) {
                     %>

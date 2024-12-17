@@ -97,5 +97,18 @@ function openEditForm(productId) {
         });
 }
 
+function submitSearch() {
+    const searchName = document.getElementById("searchName").value.trim();
+    const priceMin = document.getElementById("priceMin").value.trim();
+    const priceMax = document.getElementById("priceMax").value.trim();
+    const idcategory = document.getElementById("idcategory").value;
 
+    const params = new URLSearchParams();
+    if (searchName) params.append("name", searchName);
+    if (priceMin) params.append("minPriceParam", priceMin);
+    if (priceMax) params.append("maxPriceParam", priceMax);
+    if (idcategory) params.append("category", idcategory);
+
+    window.location.href = "/admin/ProductManage/?" + params.toString();
+}
 

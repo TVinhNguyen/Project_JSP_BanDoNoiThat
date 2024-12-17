@@ -118,7 +118,6 @@
     const orderDates = JSON.parse('<%= request.getAttribute("orderDatesJson") %>');
     const orderCounts = JSON.parse('<%= request.getAttribute("orderCountsJson") %>');
 
-    // Hàm chuyển đổi ngày từ kiểu ISO sang định dạng dd/MM/yyyy
     const formatDate = (dateString) => {
         const date = new Date(dateString);
         const day = String(date.getDate()).padStart(2, '0');
@@ -127,10 +126,8 @@
         return `${day}/${month}/${year}`;
     };
 
-    // Chuyển đổi tất cả các ngày
     const formattedDates = orderDates.map(formatDate);
 
-    // Hiển thị biểu đồ với dữ liệu đã chỉnh sửa
     const ctx = document.getElementById('ordersChart').getContext('2d');
     const ordersChart = new Chart(ctx, {
         type: 'bar',

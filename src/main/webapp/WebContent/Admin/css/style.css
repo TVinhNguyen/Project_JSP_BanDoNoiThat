@@ -1,4 +1,3 @@
-/* General Styling */
 body {
     margin: 0;
     font-family: Arial, sans-serif;
@@ -124,7 +123,6 @@ table tr:hover {
     background-color: #ec7063;
 }
 
-/* Overlay (form tạo mới) */
 .overlay {
     display: none;
     position: fixed;
@@ -262,10 +260,104 @@ img {
     border-radius: 4px;
 }
 
-/* Phản hồi cho màn hình nhỏ */
+
 @media (max-width: 768px) {
     .form-container {
         width: 90%;
     }
+}
+.sidebar ul li a.active {
+    background-color: #16a085;
+    font-weight: bold;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
+}
+
+.btn-add, .btn-edit, .btn-delete, .btn-close, .btn-submit {
+    transition: transform 0.2s ease, background-color 0.3s;
+}
+
+.btn-add:hover, .btn-edit:hover, .btn-delete:hover, .btn-close:hover, .btn-submit:hover {
+    transform: scale(1.05);
+}
+
+table tr {
+    transition: background-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    border-color: #3498db;
+    outline: none;
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+}
+
+.btn-cancel {
+    background-color: #95a5a6;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s;
+}
+
+.btn-cancel:hover {
+    background-color: #7f8c8d;
+    transform: scale(1.05);
+}
+input[type="file"] {
+    position: relative;
+}
+
+input[type="file"]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: -25px;
+    left: 0;
+    width: 100%;
+    color: #888;
+    font-size: 12px;
+    text-align: left;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+input[type="file"]:hover::after {
+    opacity: 1;
+}
+.search-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    background: #f9f9f9;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin: 5px;
+}
+
+.search-container h3 {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.search-container input,
+.search-container select,
+.search-container button {
+    padding: 5px 10px;
+    font-size: 13px;
+}
+
+#btnSearch {
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#btnSearch:hover {
+    background-color: #0056b3;
 }
 

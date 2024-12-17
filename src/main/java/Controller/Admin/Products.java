@@ -224,6 +224,7 @@ public class Products extends HttpServlet {
         List<Categories> categories = adminBO.getAllCategories();
         req.setAttribute("products", products);
         req.setAttribute("categories", categories);
+        if(category != null) req.setAttribute("idcategory", category);
         req.getRequestDispatcher("/WebContent/Admin/ProductManage.jsp").forward(req, resp);
     }
 

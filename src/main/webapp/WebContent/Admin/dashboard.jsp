@@ -13,5 +13,6 @@
       <li><a href="/admin/ProductManage/">Manage Products</a></li>
       <li><a href="/admin/UserManage/">Manage Users</a></li>
       <li><a href="/admin/OrderManage/">View Orders</a></li>
+      <li><a href="/admin/Logout/">Logout</a></li>
     </ul>
   </div>
